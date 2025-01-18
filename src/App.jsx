@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ComponentEditor from './components/ComponentEditor';
 import ComponentLibrary from './components/ComponentLibrary';
 import renderComponent from './components/renderComponent';
@@ -7,6 +7,14 @@ const DragDropBuilder = () => {
   const [droppedComponents, setDroppedComponents] = useState([]);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [draggedIndex, setDraggedIndex] = useState(null);
+
+  // Load components from session storage on initial render
+  useEffect(() => {
+    const savedComponents = sessionStorage.getItem('builderComponents');
+    if (savedComponents) {
+      setDroppedComponents(JSON.parse(savedComponents));
+    }
+  }, []);
 
   const handleDragStart = (e, type, isNew = false) => {
     if (isNew) {
@@ -43,12 +51,10 @@ const DragDropBuilder = () => {
     const isNew = e.dataTransfer.getData('isNew') === 'true';
     
     if (isNew) {
-      // Handle new component drop
       const type = e.dataTransfer.getData('componentType');
       const newComponent = { id: Date.now(), type };
       setDroppedComponents([...droppedComponents, newComponent]);
     } else {
-      // Handle reordering
       const dropTarget = e.target.closest('[data-index]');
       if (dropTarget && draggedIndex !== null) {
         const dropIndex = Number(dropTarget.dataset.index);
@@ -82,9 +88,37 @@ const DragDropBuilder = () => {
     setDroppedComponents(updatedComponents);
   };
 
+  const handleSave = () => {
+    sessionStorage.setItem('builderComponents', JSON.stringify(droppedComponents));
+    alert('Layout saved successfully!');
+  };
+
+  const handleReset = () => {
+    sessionStorage.removeItem('builderComponents');
+    setDroppedComponents([]);
+    setSelectedComponent(null);
+    alert('Layout reset successfully!');
+  };
+
   return (
-    <div className="flex gap-4 h-screen p-4">
-      <ComponentLibrary onDragStart={handleDragStart} />
+    <div className="flex gap-4 h-screen p-4 flex-col sm:flex-row">
+      <div className="w-64">
+        <ComponentLibrary onDragStart={handleDragStart} />
+        <div className="mt-4 space-y-2">
+          <button
+            onClick={handleSave}
+            className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Save Layout
+          </button>
+          <button
+            onClick={handleReset}
+            className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Reset Layout
+          </button>
+        </div>
+      </div>
       
       <div className="flex-1 flex gap-4">
         <div
