@@ -8,7 +8,6 @@ const DragDropBuilder = () => {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [draggedIndex, setDraggedIndex] = useState(null);
 
-  // Load components from session storage on initial render
   useEffect(() => {
     const savedComponents = sessionStorage.getItem('builderComponents');
     if (savedComponents) {
